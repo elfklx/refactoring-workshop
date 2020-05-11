@@ -1,25 +1,26 @@
 require 'shellwords'
 require 'yaml'
-def run_autoclop
-  $config = ENV['AUTOCLOP_CONFIG']
-  $os = File.read('/etc/issue')
+
+def run_autoclop                   # TODO: several methods with similar names
+  $config = ENV['AUTOCLOP_CONFIG'] # TODO: global variable config
+  $os = File.read('/etc/issue')    # TODO: global variable $config and ENV
   autoclop
 end
 
-def autoclop
-  return invoke_clop_default if $config.nil? || $config.empty?
+def autoclop   # TODO: multiple responsibilities; configuration and invocation
+  return invoke_clop_default if $config.nil? || $config.empty?  # TODO: early return; TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic
   python_version = 2
   # Red Hat has deprecated Python 2
-  python_version = 3 if $os =~ /Red Hat 8/
-  cfg = YAML.safe_load(File.read($config))
-  return invoke_clop_default :invalid_yaml if cfg.nil?
-  python_version = cfg['python-version'] if cfg['python-version']
-  optimization = cfg['opt'] if cfg['opt']
+  python_version = 3 if $os =~ /Red Hat 8/  # TODO: python version reassigned; TODO: magic regex
+  cfg = YAML.safe_load(File.read($config))  # TODO: coupling to both format (yaml) and data source
+  return invoke_clop_default :invalid_yaml if cfg.nil?  # TODO: early return; TODO: nil check
+  python_version = cfg['python-version'] if cfg['python-version'] # TODO: reassigned of pythong version
+  optimization = cfg['opt'] if cfg['opt'] # TODO: dead code (conditional can be removed)
 
-  if cfg['libs']
+  if cfg['libs']                          # TODO: coupling to structure of cfg hash
     libargs = ''
-    index = 0
-    for lib in cfg['libs']
+    index = 0                             # TODO: index variable defined outside of loop
+    for lib in cfg['libs']                # TODO: loop inside conditional
       libargs << "-l#{esc lib}"
       if index < cfg['libs'].length - 1
         libargs << ' '
@@ -27,7 +28,7 @@ def autoclop
       index += 1
     end
   elsif cfg['libdir']
-    libargs = "-L#{esc cfg['libdir']}"
+    libargs = "-L#{esc cfg['libdir']}"    # TODO: duplication of line 36
   elsif cfg['libdirs']
     libargs = ''
     index = 0
@@ -46,23 +47,23 @@ end
 
 def invoke_clop_default(message_type=nil)
   py = 2
-  py = 3 if $os =~ /Red Hat 8/ # bugfix
-  if message_type == :invalid_yaml
+  py = 3 if $os =~ /Red Hat 8/ # bugfix   # TODO: duplicate logic
+  if message_type == :invalid_yaml        # TODO: multiple responsibilities
     Kernel.puts "WARNING: Invalid YAML in #{$config}. Assuming the default configuration."
   else
     Kernel.puts "WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration."
   end
-  invoke_clop(py, 'O2', "-L/home/#{esc ENV['USER']}/.cbiscuit/lib")
+  invoke_clop(py, 'O2', "-L/home/#{esc ENV['USER']}/.cbiscuit/lib")   # TODO: deep call stack
 end
 
 def invoke_clop(python_version, optimization = 'O1', libargs = '')
-  libargs = ' ' + libargs unless libargs.empty?
-  ok = Kernel.system "clop configure --python #{esc python_version} -#{esc optimization}#{libargs}"
+  libargs = ' ' + libargs unless libargs.empty?  # TODO: nil check?
+  ok = Kernel.system "clop configure --python #{esc python_version} -#{esc optimization}#{libargs}" #TODO: no esc call on libargs
   if !ok
     raise "clop failed. Please inspect the output above to determine what went wrong."
   end
 end
 
-def esc arg
+def esc arg # TODO: middleman
   Shellwords.escape arg
 end
