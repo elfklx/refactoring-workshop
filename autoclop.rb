@@ -15,7 +15,7 @@ def autoclop   # TODO: multiple responsibilities; configuration and invocation
   cfg = YAML.safe_load(File.read($config))  # TODO: coupling to both format (yaml) and data source
   return invoke_clop_default :invalid_yaml if cfg.nil?  # TODO: early return; TODO: nil check
   python_version = cfg['python-version'] if cfg['python-version'] # TODO: reassigned of pythong version
-  optimization = cfg['opt'] if cfg['opt'] # TODO: dead code (conditional can be removed)
+  optimization = cfg['opt']
 
   if cfg['libs']                          # TODO: coupling to structure of cfg hash
     libargs = ''
