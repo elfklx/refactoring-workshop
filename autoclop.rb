@@ -9,12 +9,9 @@ end
 
 def autoclop   # TODO: multiple responsibilities; configuration and invocation
   return invoke_clop_default if $config.nil? || $config.empty?  # TODO: early return; TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic
-  python_version = 2
-  # Red Hat has deprecated Python 2
-  python_version = 3 if $os =~ /Red Hat 8/  # TODO: python version reassigned; TODO: magic regex
   cfg = YAML.safe_load(File.read($config))  # TODO: coupling to both format (yaml) and data source
   return invoke_clop_default :invalid_yaml if cfg.nil?  # TODO: early return; TODO: nil check
-  python_version = cfg['python-version'] if cfg['python-version'] # TODO: reassigned of pythong version
+  python_version = get_py_version($os, cfg) # TODO: reassigned of python version
   optimization = cfg['opt']
 
   if cfg['libs']                          # TODO: coupling to structure of cfg hash
@@ -45,9 +42,18 @@ def autoclop   # TODO: multiple responsibilities; configuration and invocation
   invoke_clop(python_version, optimization || 'O2', libargs || '')
 end
 
-def invoke_clop_default(message_type=nil)
+def get_py_version(os, config)
   py = 2
-  py = 3 if $os =~ /Red Hat 8/ # bugfix   # TODO: duplicate logic
+  if os =~ /Red Hat 8/ # Red Hat has deprecated Python 2
+    py = 3
+  elsif config['python-version']
+    py = config['python-version']
+  end
+  py
+end
+
+def invoke_clop_default(message_type=nil)
+  py = get_py_version($os, {})
   if message_type == :invalid_yaml        # TODO: multiple responsibilities
     Kernel.puts "WARNING: Invalid YAML in #{$config}. Assuming the default configuration."
   else
