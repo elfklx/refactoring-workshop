@@ -62,7 +62,7 @@ def invoke_clop_default(message_type=nil)
   invoke_clop(py, 'O2', "-L/home/#{esc ENV['USER']}/.cbiscuit/lib")   # TODO: deep call stack
 end
 
-def invoke_clop(python_version, optimization = 'O1', libargs = '')
+def invoke_clop(python_version, optimization, libargs)
   libargs = ' ' + libargs unless libargs.empty?  # TODO: nil check?
   ok = Kernel.system "clop configure --python #{esc python_version} -#{esc optimization}#{libargs}" #TODO: no esc call on libargs
   if !ok
