@@ -43,13 +43,15 @@ def autoclop   # TODO: multiple responsibilities; configuration and invocation
 end
 
 def get_py_version(os, config)
-  py = 2
+  default_python_version = 2
+  python_version =
   if os =~ /Red Hat 8/ # Red Hat has deprecated Python 2
-    py = 3
+    3
   elsif config['python-version']
-    py = config['python-version']
+    config['python-version']
+  else
+    default_python_version
   end
-  py
 end
 
 def invoke_clop_default(message_type=nil)
