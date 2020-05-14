@@ -14,14 +14,16 @@ def autoclop   # TODO: multiple responsibilities; configuration and invocation
   python_version = get_py_version($os, cfg) # TODO: reassigned of python version
   optimization = cfg['opt']
 
-  if cfg['libs']                          # TODO: coupling to structure of cfg hash
-    libargs = cfg['libs'].map{ |lib| "-l#{esc lib}"}.join(' ')
+  libargs =
+  if cfg['libs']
+    cfg['libs'].map{ |lib| "-l#{esc lib}"}.join(' ')
   elsif cfg['libdir']
-    libargs = "-L#{esc cfg['libdir']}"    # TODO: duplication of line 36
+    "-L#{esc cfg['libdir']}"
   elsif cfg['libdirs']
-    libargs = cfg['libdirs'].map{ |ld| "-L#{esc ld}"}.join(' ')
+    cfg['libdirs'].map{ |ld| "-L#{esc ld}"}.join(' ')
+  else
+    "-L/home/#{esc ENV['USER']}/.cbiscuit/lib"
   end
-  libargs ||= "-L/home/#{esc ENV['USER']}/.cbiscuit/lib"
 
   invoke_clop(python_version, optimization || 'O2', libargs)
 end
