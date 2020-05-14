@@ -15,22 +15,21 @@ def autoclop   # TODO: multiple responsibilities; configuration and invocation
   optimization = cfg['opt']
 
   libargs =
-  if cfg['libs']
-    cfg['libs'].map{ |lib| "-l#{esc lib}"}.join(' ')
-  elsif cfg['libdir']
-    "-L#{esc cfg['libdir']}"
-  elsif cfg['libdirs']
-    cfg['libdirs'].map{ |ld| "-L#{esc ld}"}.join(' ')
-  else
-    "-L/home/#{esc ENV['USER']}/.cbiscuit/lib"
-  end
+    if cfg['libs']
+      cfg['libs'].map { |lib| "-l#{esc lib}" }.join(' ')
+    elsif cfg['libdir']
+      "-L#{esc cfg['libdir']}"
+    elsif cfg['libdirs']
+      cfg['libdirs'].map { |ld| "-L#{esc ld}" }.join(' ')
+    else
+      "-L/home/#{esc ENV['USER']}/.cbiscuit/lib"
+    end
 
   invoke_clop(python_version, optimization || 'O2', libargs)
 end
 
 def get_py_version(os, config)
   default_python_version = 2
-  python_version =
   if os =~ /Red Hat 8/ # Red Hat has deprecated Python 2
     3
   elsif config['python-version']
@@ -40,7 +39,7 @@ def get_py_version(os, config)
   end
 end
 
-def invoke_clop_default(message_type=nil)
+def invoke_clop_default(message_type = nil)
   py = get_py_version($os, {})
   if message_type == :invalid_yaml        # TODO: multiple responsibilities
     Kernel.puts "WARNING: Invalid YAML in #{$config}. Assuming the default configuration."
