@@ -15,27 +15,11 @@ def autoclop   # TODO: multiple responsibilities; configuration and invocation
   optimization = cfg['opt']
 
   if cfg['libs']                          # TODO: coupling to structure of cfg hash
-    libargs = ''
-    index = 0                             # TODO: index variable defined outside of loop
-    for lib in cfg['libs']                # TODO: loop inside conditional
-      libargs << "-l#{esc lib}"
-      if index < cfg['libs'].length - 1
-        libargs << ' '
-      end
-      index += 1
-    end
+    libargs = cfg['libs'].map{ |lib| "-l#{esc lib}"}.join(' ')
   elsif cfg['libdir']
     libargs = "-L#{esc cfg['libdir']}"    # TODO: duplication of line 36
   elsif cfg['libdirs']
-    libargs = ''
-    index = 0
-    for libdir in cfg['libdirs']
-      libargs << "-L#{esc libdir}"
-      if index < cfg['libdirs'].length - 1
-        libargs << ' '
-      end
-      index += 1
-    end
+    libargs = cfg['libdirs'].map{ |ld| "-L#{esc ld}"}.join(' ')
   end
   libargs ||= "-L/home/#{esc ENV['USER']}/.cbiscuit/lib"
 
