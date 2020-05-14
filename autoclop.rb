@@ -23,7 +23,7 @@ def autoclop   # TODO: multiple responsibilities; configuration and invocation
   end
   libargs ||= "-L/home/#{esc ENV['USER']}/.cbiscuit/lib"
 
-  invoke_clop(python_version, optimization || 'O2', libargs || '')
+  invoke_clop(python_version, optimization || 'O2', libargs)
 end
 
 def get_py_version(os, config)
@@ -49,7 +49,7 @@ def invoke_clop_default(message_type=nil)
 end
 
 def invoke_clop(python_version, optimization, libargs)
-  ok = Kernel.system "clop configure --python #{esc python_version} -#{esc optimization} #{libargs}" #TODO: no esc call on libargs
+  ok = Kernel.system "clop configure --python #{esc python_version} -#{esc optimization}#{libargs.empty? ? '': " "+libargs}" #TODO: no esc call on libargs
   if !ok
     raise "clop failed. Please inspect the output above to determine what went wrong."
   end
