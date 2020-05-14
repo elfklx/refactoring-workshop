@@ -63,8 +63,7 @@ def invoke_clop_default(message_type=nil)
 end
 
 def invoke_clop(python_version, optimization, libargs)
-  libargs = ' ' + libargs unless libargs.empty?  # TODO: nil check?
-  ok = Kernel.system "clop configure --python #{esc python_version} -#{esc optimization}#{libargs}" #TODO: no esc call on libargs
+  ok = Kernel.system "clop configure --python #{esc python_version} -#{esc optimization} #{libargs}" #TODO: no esc call on libargs
   if !ok
     raise "clop failed. Please inspect the output above to determine what went wrong."
   end

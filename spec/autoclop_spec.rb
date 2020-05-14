@@ -156,7 +156,7 @@ opt: '$(echo hacked > /tmp/foo)'
 libs: []
 EOF
     run_autoclop
-    expect(Kernel).to have_received(:system).with('clop configure --python 2 -\$\(echo\ hacked\ \>\ /tmp/foo\)')
+    expect(Kernel).to have_received(:system).with('clop configure --python 2 -\$\(echo\ hacked\ \>\ /tmp/foo\) ')
   end
 
   it 'blocks shell injection attacks that exploit the python version' do
@@ -166,7 +166,7 @@ python-version: '$(echo hacked > /tmp/foo)'
 libs: []
 EOF
     run_autoclop
-    expect(Kernel).to have_received(:system).with('clop configure --python \$\(echo\ hacked\ \>\ /tmp/foo\) -O2')
+    expect(Kernel).to have_received(:system).with('clop configure --python \$\(echo\ hacked\ \>\ /tmp/foo\) -O2 ')
   end
 
   it 'blocks shell injection attacks that exploit the USER env variable' do
