@@ -30,10 +30,10 @@ def autoclop   # TODO: multiple responsibilities; configuration and invocation
       "-L/home/#{esc ENV['USER']}/.cbiscuit/lib"
     end
 
-  invoke_clop(get_py_version($os, cfg), cfg['opt'] || 'O2', libargs)
+  invoke_clop(py_version($os, cfg), cfg['opt'] || 'O2', libargs)
 end
 
-def get_py_version(os, config)
+def py_version(os, config)
   default_python_version = 2
   if os =~ /Red Hat 8/ # Red Hat has deprecated Python 2
     3
@@ -45,7 +45,7 @@ def get_py_version(os, config)
 end
 
 def invoke_clop_default()
-  invoke_clop(get_py_version($os, {}), 'O2', "-L/home/#{esc ENV['USER']}/.cbiscuit/lib")   # TODO: deep call stack
+  invoke_clop(py_version($os, {}), 'O2', "-L/home/#{esc ENV['USER']}/.cbiscuit/lib")   # TODO: deep call stack
 end
 
 def invoke_clop(python_version, optimization, libargs)
