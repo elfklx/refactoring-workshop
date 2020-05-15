@@ -11,8 +11,6 @@ def autoclop   # TODO: multiple responsibilities; configuration and invocation
   return invoke_clop_default if $config.nil? || $config.empty?  # TODO: early return; TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic
   cfg = YAML.safe_load(File.read($config))  # TODO: coupling to both format (yaml) and data source
   return invoke_clop_default :invalid_yaml if cfg.nil?  # TODO: early return; TODO: nil check
-  python_version = get_py_version($os, cfg) # TODO: reassigned of python version
-  optimization = cfg['opt']
 
   libargs =
     if cfg['libs']
@@ -25,7 +23,7 @@ def autoclop   # TODO: multiple responsibilities; configuration and invocation
       "-L/home/#{esc ENV['USER']}/.cbiscuit/lib"
     end
 
-  invoke_clop(python_version, optimization || 'O2', libargs)
+  invoke_clop(get_py_version($os, cfg), cfg['opt'] || 'O2', libargs)
 end
 
 def get_py_version(os, config)
@@ -50,10 +48,10 @@ def invoke_clop_default(message_type = nil)
 end
 
 def invoke_clop(python_version, optimization, libargs)
-  ok = Kernel.system "clop configure --python #{esc python_version} -#{esc optimization}#{libargs.empty? ? '': " "+libargs}" #TODO: no esc call on libargs
-  if !ok
-    raise "clop failed. Please inspect the output above to determine what went wrong."
-  end
+  ok = Kernel.system "clop configure --python #{esc python_version} -#{esc optimization}#{libargs.empty? ? '' : ' '+libargs}" #TODO: no esc call on libargs
+  ok && return
+
+  raise 'clop failed. Please inspect the output above to determine what went wrong.'
 end
 
 def esc arg # TODO: middleman
