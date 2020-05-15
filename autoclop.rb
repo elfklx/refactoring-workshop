@@ -8,9 +8,16 @@ def run_autoclop                   # TODO: several methods with similar names
 end
 
 def autoclop   # TODO: multiple responsibilities; configuration and invocation
-  return invoke_clop_default if $config.nil? || $config.empty?  # TODO: early return; TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic
+  if $config.nil? || $config.empty?  # TODO: early return; TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic 
+    Kernel.puts "WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration."
+    return invoke_clop_default
+  end
+
   cfg = YAML.safe_load(File.read($config))  # TODO: coupling to both format (yaml) and data source
-  return invoke_clop_default :invalid_yaml if cfg.nil?  # TODO: early return; TODO: nil check
+  if cfg.nil? # TODO: early return; TODO: nil check
+    Kernel.puts "WARNING: Invalid YAML in #{$config}. Assuming the default configuration."
+    return invoke_clop_default
+  end
 
   libargs =
     if cfg['libs']
@@ -37,12 +44,7 @@ def get_py_version(os, config)
   end
 end
 
-def invoke_clop_default(message_type = nil)
-  if message_type == :invalid_yaml        # TODO: multiple responsibilities
-    Kernel.puts "WARNING: Invalid YAML in #{$config}. Assuming the default configuration."
-  else
-    Kernel.puts "WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration."
-  end
+def invoke_clop_default()
   invoke_clop(get_py_version($os, {}), 'O2', "-L/home/#{esc ENV['USER']}/.cbiscuit/lib")   # TODO: deep call stack
 end
 
