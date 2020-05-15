@@ -38,13 +38,12 @@ def get_py_version(os, config)
 end
 
 def invoke_clop_default(message_type = nil)
-  py = get_py_version($os, {})
   if message_type == :invalid_yaml        # TODO: multiple responsibilities
     Kernel.puts "WARNING: Invalid YAML in #{$config}. Assuming the default configuration."
   else
     Kernel.puts "WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration."
   end
-  invoke_clop(py, 'O2', "-L/home/#{esc ENV['USER']}/.cbiscuit/lib")   # TODO: deep call stack
+  invoke_clop(get_py_version($os, {}), 'O2', "-L/home/#{esc ENV['USER']}/.cbiscuit/lib")   # TODO: deep call stack
 end
 
 def invoke_clop(python_version, optimization, libargs)
