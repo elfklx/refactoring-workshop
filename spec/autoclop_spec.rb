@@ -191,4 +191,13 @@ EOF
     allow(Kernel).to receive(:system).and_return(false)
     expect { run_autoclop }.to raise_error 'clop failed. Please inspect the output above to determine what went wrong.'
   end
+
+  it 'passes no libs if given an empty libs list' do
+    self.config = <<-EOF
+---
+libs: []
+EOF
+    run_autoclop
+    expect(Kernel).to have_received(:system).with('clop configure --python 2 -O2')
+  end
 end
