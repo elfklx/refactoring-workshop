@@ -2,21 +2,21 @@ require 'shellwords'
 require 'yaml'
 
 def run_autoclop                   # TODO: several methods with similar names
-  $config = ENV['AUTOCLOP_CONFIG'] # TODO: global variable config
-  $os = File.read('/etc/issue')    # TODO: global variable $config and ENV
-  autoclop
+  config = ENV['AUTOCLOP_CONFIG'] # TODO: global variable config
+  os = File.read('/etc/issue')    # TODO: global variable $config and ENV
+  autoclop(os, config)
 end
 
-def autoclop   # TODO: multiple responsibilities; configuration and invocation
-  if $config.nil? || $config.empty?  # TODO: early return; TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic 
+def autoclop(os, config)   # TODO: multiple responsibilities; configuration and invocation
+  if config.nil? || config.empty?  # TODO: early return; TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic 
     Kernel.puts "WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration."
-    return invoke_clop_default
+    return invoke_clop_default(os)
   end
 
-  cfg = YAML.safe_load(File.read($config))  # TODO: coupling to both format (yaml) and data source
+  cfg = YAML.safe_load(File.read(config))  # TODO: coupling to both format (yaml) and data source
   if cfg.nil? # TODO: early return; TODO: nil check
-    Kernel.puts "WARNING: Invalid YAML in #{$config}. Assuming the default configuration."
-    return invoke_clop_default
+    Kernel.puts "WARNING: Invalid YAML in #{config}. Assuming the default configuration."
+    return invoke_clop_default(os)
   end
 
   libargs =
@@ -30,7 +30,7 @@ def autoclop   # TODO: multiple responsibilities; configuration and invocation
       "-L/home/#{esc ENV['USER']}/.cbiscuit/lib"
     end
 
-  invoke_clop(py_version($os, cfg), cfg['opt'] || 'O2', libargs)
+  invoke_clop(py_version(os, cfg), cfg['opt'] || 'O2', libargs)
 end
 
 def py_version(os, config)
@@ -44,8 +44,8 @@ def py_version(os, config)
   end
 end
 
-def invoke_clop_default()
-  invoke_clop(py_version($os, {}), 'O2', "-L/home/#{esc ENV['USER']}/.cbiscuit/lib")   # TODO: deep call stack
+def invoke_clop_default(os)
+  invoke_clop(py_version(os, {}), 'O2', "-L/home/#{esc ENV['USER']}/.cbiscuit/lib")   # TODO: deep call stack
 end
 
 def invoke_clop(python_version, optimization, libargs)

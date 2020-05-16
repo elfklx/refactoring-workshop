@@ -6,8 +6,6 @@ describe 'Configuring `clop`' do
   let(:user) { 'testuser' }
 
   before :each do
-    $config = nil
-    $os = nil
     ENV['USER'] = user
     FileUtils.rm_f('/tmp/test-file-deleteme')
     allow(Kernel).to receive(:system).and_return true
