@@ -30,8 +30,11 @@ class Config
     end
   end
 
-  def python_version
-    @cfg['python-version']
+  def py_version(os)
+    default_python_version = 2
+    python_version || (
+      os =~ /Red Hat 8/ ? 3 : default_python_version # Red Hat has deprecated Python 2
+    )
   end
 
   def opt
@@ -43,6 +46,10 @@ class Config
   end
 
   private
+
+  def python_version
+    @cfg['python-version']
+  end
 
   def libs
     @cfg['libs']
@@ -59,8 +66,9 @@ class Config
 end
 
 class NullConfig
-  def python_version
-    nil
+  def py_version(os)
+    default_python_version = 2
+    os =~ /Red Hat 8/ ? 3 : default_python_version # Red Hat has deprecated Python 2
   end
 end
 
@@ -68,31 +76,22 @@ def autoclop(os, config_path, user)   # TODO: multiple responsibilities; configu
   cmd =
     if config_path.nil? || config_path.empty?  # TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic
       Kernel.puts 'WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration.'
-      clop_cmd(py_version(os, NullConfig.new), 'O2', ["-L/home/#{user}/.cbiscuit/lib"])
+      cfg = NullConfig.new
+      clop_cmd(cfg.py_version(os), 'O2', ["-L/home/#{user}/.cbiscuit/lib"])
     else
       cfg = Config.load(config_path, user)  # TODO: coupling to both format (yaml) and data source
       if cfg.valid? # TODO: nil check
         Kernel.puts "WARNING: Invalid YAML in #{config_path}. Assuming the default configuration."
-        clop_cmd(py_version(os, NullConfig.new), 'O2', ["-L/home/#{user}/.cbiscuit/lib"])
+        cfg = NullConfig.new
+        clop_cmd(cfg.py_version(os), 'O2', ["-L/home/#{user}/.cbiscuit/lib"])
       else
-        clop_cmd(py_version(os, cfg), cfg.opt || 'O2', cfg.libargs)
+        clop_cmd(cfg.py_version(os), cfg.opt || 'O2', cfg.libargs)
       end
     end
 
   ok = Kernel.system cmd
   if !ok
     raise 'clop failed. Please inspect the output above to determine what went wrong.'
-  end
-end
-
-def py_version(os, config)
-  default_python_version = 2
-  if os =~ /Red Hat 8/ # Red Hat has deprecated Python 2
-    3
-  elsif config.python_version
-    config.python_version
-  else
-    default_python_version
   end
 end
 
