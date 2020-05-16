@@ -8,17 +8,43 @@ def run_autoclop                   # TODO: several methods with similar names
   autoclop(os, config_path, user)
 end
 
-class Config < Struct.new(:cfg)
-  def self.load(path)
-    @cfg = new YAML.safe_load(File.read(path))
+class Config
+  def initialize(cfg)
+    @cfg = cfg
   end
 
-  def [](k)
-    cfg ? cfg[k] : nil
+  def self.load(path)
+    new YAML.safe_load(File.read(path))
+  end
+
+  def libs
+    @cfg['libs']
+  end
+
+  def libdir
+    @cfg['libdir']
+  end
+
+  def libdirs
+    @cfg['libdirs']
+  end
+
+  def opt
+    @cfg['opt']
+  end
+
+  def python_version
+    @cfg['python-version']
   end
 
   def valid?
-    cfg.nil?
+    @cfg.nil?
+  end
+end
+
+class NullConfig
+  def python_version
+    nil
   end
 end
 
@@ -26,24 +52,24 @@ def autoclop(os, config_path, user)   # TODO: multiple responsibilities; configu
   cmd =
     if config_path.nil? || config_path.empty?  # TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic
       Kernel.puts 'WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration.'
-      clop_cmd(py_version(os, {}), 'O2', "-L/home/#{esc user}/.cbiscuit/lib")
+      clop_cmd(py_version(os, NullConfig.new), 'O2', "-L/home/#{esc user}/.cbiscuit/lib")
     else
       cfg = Config.load(config_path)  # TODO: coupling to both format (yaml) and data source
       if cfg.valid? # TODO: nil check
         Kernel.puts "WARNING: Invalid YAML in #{config_path}. Assuming the default configuration."
-        clop_cmd(py_version(os, {}), 'O2', "-L/home/#{esc user}/.cbiscuit/lib")
+        clop_cmd(py_version(os, NullConfig.new), 'O2', "-L/home/#{esc user}/.cbiscuit/lib")
       else
         libargs =
-          if cfg['libs']
-            cfg['libs'].map { |lib| "-l#{esc lib}" }.join(' ')
-          elsif cfg['libdir']
-            "-L#{esc cfg['libdir']}"
-          elsif cfg['libdirs']
-            cfg['libdirs'].map { |ld| "-L#{esc ld}" }.join(' ')
+          if cfg.libs
+            cfg.libs.map { |lib| "-l#{esc lib}" }.join(' ')
+          elsif cfg.libdir
+            "-L#{esc cfg.libdir}"
+          elsif cfg.libdirs
+            cfg.libdirs.map { |ld| "-L#{esc ld}" }.join(' ')
           else
             "-L/home/#{esc user}/.cbiscuit/lib"
           end
-        clop_cmd(py_version(os, cfg), cfg['opt'] || 'O2', libargs)
+        clop_cmd(py_version(os, cfg), cfg.opt || 'O2', libargs)
       end
     end
 
@@ -57,8 +83,8 @@ def py_version(os, config)
   default_python_version = 2
   if os =~ /Red Hat 8/ # Red Hat has deprecated Python 2
     3
-  elsif config['python-version']
-    config['python-version']
+  elsif config.python_version
+    config.python_version
   else
     default_python_version
   end
