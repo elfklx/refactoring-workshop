@@ -8,38 +8,33 @@ def run_autoclop                   # TODO: several methods with similar names
 end
 
 def autoclop(os, config)   # TODO: multiple responsibilities; configuration and invocation
-  if config.nil? || config.empty?  # TODO: early return; TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic 
+  if config.nil? || config.empty?  # TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic
     Kernel.puts 'WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration.'
-    ok = Kernel.system clop_cmd(py_version(os, {}), 'O2', "-L/home/#{esc ENV['USER']}/.cbiscuit/lib")
-    ok && return
-
-    raise 'clop failed. Please inspect the output above to determine what went wrong.'
-  end
-
-  cfg = YAML.safe_load(File.read(config))  # TODO: coupling to both format (yaml) and data source
-  if cfg.nil? # TODO: early return; TODO: nil check
-    Kernel.puts "WARNING: Invalid YAML in #{config}. Assuming the default configuration."
-    ok = Kernel.system clop_cmd(py_version(os, {}), 'O2', "-L/home/#{esc ENV['USER']}/.cbiscuit/lib")
-    ok && return
-
-    raise 'clop failed. Please inspect the output above to determine what went wrong.'
-  end
-
-  libargs =
-    if cfg['libs']
-      cfg['libs'].map { |lib| "-l#{esc lib}" }.join(' ')
-    elsif cfg['libdir']
-      "-L#{esc cfg['libdir']}"
-    elsif cfg['libdirs']
-      cfg['libdirs'].map { |ld| "-L#{esc ld}" }.join(' ')
+    cmd = clop_cmd(py_version(os, {}), 'O2', "-L/home/#{esc ENV['USER']}/.cbiscuit/lib")
+  else
+    cfg = YAML.safe_load(File.read(config))  # TODO: coupling to both format (yaml) and data source
+    if cfg.nil? # TODO: nil check
+      Kernel.puts "WARNING: Invalid YAML in #{config}. Assuming the default configuration."
+      cmd = clop_cmd(py_version(os, {}), 'O2', "-L/home/#{esc ENV['USER']}/.cbiscuit/lib")
     else
-      "-L/home/#{esc ENV['USER']}/.cbiscuit/lib"
+      libargs =
+        if cfg['libs']
+          cfg['libs'].map { |lib| "-l#{esc lib}" }.join(' ')
+        elsif cfg['libdir']
+          "-L#{esc cfg['libdir']}"
+        elsif cfg['libdirs']
+          cfg['libdirs'].map { |ld| "-L#{esc ld}" }.join(' ')
+        else
+          "-L/home/#{esc ENV['USER']}/.cbiscuit/lib"
+        end
+      cmd = clop_cmd(py_version(os, cfg), cfg['opt'] || 'O2', libargs)
     end
+  end
 
-  ok = Kernel.system clop_cmd(py_version(os, cfg), cfg['opt'] || 'O2', libargs)
-  ok && return
-
-  raise 'clop failed. Please inspect the output above to determine what went wrong.'
+  ok = Kernel.system cmd
+  if !ok
+    raise 'clop failed. Please inspect the output above to determine what went wrong.'
+  end
 end
 
 def py_version(os, config)
