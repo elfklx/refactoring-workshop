@@ -8,14 +8,28 @@ def run_autoclop                   # TODO: several methods with similar names
   autoclop(os, config_path, user)
 end
 
+class Config < Struct.new(:cfg)
+  def self.load(path)
+    @cfg = new YAML.safe_load(File.read(path))
+  end
+
+  def [](k)
+    cfg ? cfg[k] : nil
+  end
+
+  def valid?
+    cfg.nil?
+  end
+end
+
 def autoclop(os, config_path, user)   # TODO: multiple responsibilities; configuration and invocation
   cmd =
     if config_path.nil? || config_path.empty?  # TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic
       Kernel.puts 'WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration.'
       clop_cmd(py_version(os, {}), 'O2', "-L/home/#{esc user}/.cbiscuit/lib")
     else
-      cfg = YAML.safe_load(File.read(config_path))  # TODO: coupling to both format (yaml) and data source
-      if cfg.nil? # TODO: nil check
+      cfg = Config.load(config_path)  # TODO: coupling to both format (yaml) and data source
+      if cfg.valid? # TODO: nil check
         Kernel.puts "WARNING: Invalid YAML in #{config_path}. Assuming the default configuration."
         clop_cmd(py_version(os, {}), 'O2', "-L/home/#{esc user}/.cbiscuit/lib")
       else
