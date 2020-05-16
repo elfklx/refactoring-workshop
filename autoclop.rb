@@ -49,10 +49,14 @@ def invoke_clop_default(os)
 end
 
 def invoke_clop(python_version, optimization, libargs)
-  ok = Kernel.system "clop configure --python #{esc python_version} -#{esc optimization}#{libargs.empty? ? '' : ' '+libargs}" #TODO: no esc call on libargs
+  ok = Kernel.system clop_cmd(python_version, optimization, libargs)
   ok && return
 
   raise 'clop failed. Please inspect the output above to determine what went wrong.'
+end
+
+def clop_cmd(python_version, optimization, libargs)
+  "clop configure --python #{esc python_version} -#{esc optimization}#{libargs.empty? ? '' : ' '+libargs}"
 end
 
 def esc arg # TODO: middleman
