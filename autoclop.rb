@@ -54,16 +54,24 @@ class Config
     @user = user
   end
 
-  def libargs
-    if libs
-      libs.map { |lib| "-l#{lib}" }
-    elsif libdir
-      ["-L#{libdir}"]
-    elsif libdirs
-      libdirs.map { |ld| "-L#{ld}" }
-    else
-      ["-L/home/#{@user}/.cbiscuit/lib"]
+  class RepeatedFlags < Struct.new(:flag, :args)
+    def to_a
+      args.map { |a| flag + a }
     end
+  end
+
+  def libargs
+    args =
+      if libs
+        ['-l', libs]
+      elsif libdir
+        ['-L', [libdir]]
+      elsif libdirs
+        ['-L', libdirs]
+      else
+        ['-L', ["/home/#{@user}/.cbiscuit/lib"]]
+      end
+    RepeatedFlags.new(*args).to_a
   end
 
   def py_version
