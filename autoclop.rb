@@ -8,6 +8,22 @@ def run_autoclop                   # TODO: several methods with similar names
   autoclop(os, config_path, user)
 end
 
+def autoclop(os, config_path, user)
+  warning, cfg = ConfigFactory.build(config_path, user)
+  Kernel.puts warning
+  ok = Kernel.system clop_cmd(cfg.py_version(os), cfg.opt, cfg.libargs)
+  if !ok
+    raise 'clop failed. Please inspect the output above to determine what went wrong.'
+  end
+end
+
+def clop_cmd(python_version, optimization, libargs)
+  'clop configure ' \
+    "--python #{Shellwords.escape python_version} " \
+    "-#{Shellwords.escape optimization}" \
+    "#{libargs.empty? ? '' : ' ' + libargs.map { |a| Shellwords.escape a }.join(' ')}"
+end
+
 class ConfigFactory
   def self.build(path, user)
     if path.nil? || path.empty? # TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic
@@ -94,18 +110,3 @@ class DefaultConfig
   end
 end
 
-def autoclop(os, config_path, user)
-  warning, cfg = ConfigFactory.build(config_path, user)
-  Kernel.puts warning
-  ok = Kernel.system clop_cmd(cfg.py_version(os), cfg.opt, cfg.libargs)
-  if !ok
-    raise 'clop failed. Please inspect the output above to determine what went wrong.'
-  end
-end
-
-def clop_cmd(python_version, optimization, libargs)
-  'clop configure ' \
-    "--python #{Shellwords.escape python_version} " \
-    "-#{Shellwords.escape optimization}" \
-    "#{libargs.empty? ? '' : ' ' + libargs.map { |a| Shellwords.escape a }.join(' ')}"
-end
