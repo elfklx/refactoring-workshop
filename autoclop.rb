@@ -1,15 +1,14 @@
 require 'shellwords'
 require 'yaml'
 
-def run_autoclop                   # TODO: several methods with similar names
-  os = File.read('/etc/issue')    # TODO: global variable $config and ENV
-  autoclop(os, ENV)
+def run_autoclop
+  autoclop(File.read('/etc/issue'), ENV)
 end
 
 def autoclop(os, env)
-  warning, cfg = ConfigFactory.build(env)
+  warning, cfg = ConfigFactory.build(os, env)
   Kernel.puts warning
-  return if Kernel.system clop_cmd(cfg.py_version(os), cfg.opt, cfg.libargs)
+  return if Kernel.system clop_cmd(cfg.py_version, cfg.opt, cfg.libargs)
 
   raise 'clop failed. Please inspect the output above to determine what went wrong.'
 end
@@ -29,27 +28,28 @@ def clop_cmd(python_version, optimization, libargs)
 end
 
 class ConfigFactory
-  def self.build(env)
+  def self.build(os, env)
     path = env['AUTOCLOP_CONFIG']
     user = env['USER']
     if path.nil? || path.empty?
       ['WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration.',
-       DefaultConfig.new(user)]
-    elsif (c = from_yaml(path, user)).invalid?
+       DefaultConfig.new(os, user)]
+    elsif (c = from_yaml(os, path, user)).invalid?
       ["WARNING: Invalid YAML in #{path}. Assuming the default configuration.",
-       DefaultConfig.new(user)]
+       DefaultConfig.new(os, user)]
     else
       ['', c]
     end
   end
 
-  def self.from_yaml(path, user)
-    Config.new YAML.safe_load(File.read(path)), user
+  def self.from_yaml(os, path, user)
+    Config.new os, YAML.safe_load(File.read(path)), user
   end
 end
 
 class Config
-  def initialize(cfg, user)
+  def initialize(os, cfg, user)
+    @os = os
     @cfg = cfg
     @user = user
   end
@@ -66,8 +66,8 @@ class Config
     end
   end
 
-  def py_version(os)
-    @cfg['python-version'] || DefaultConfig.new(nil).py_version(os)
+  def py_version
+    @cfg['python-version'] || DefaultConfig.new(@os, nil).py_version
   end
 
   def opt
@@ -94,14 +94,15 @@ class Config
 end
 
 class DefaultConfig
-  def initialize(user)
+  def initialize(os, user)
+    @os = os
     @user = user
   end
 
-  def py_version(os)
+  def py_version
     default_python_version = 2
     # Red Hat has deprecated Python 2
-    os =~ /Red Hat 8/ ? 3 : default_python_version
+    @os =~ /Red Hat 8/ ? 3 : default_python_version
   end
 
   def opt
