@@ -41,7 +41,7 @@ class Config
     @cfg['opt'] || 'O2'
   end
 
-  def valid?
+  def invalid?
     @cfg.nil?
   end
 
@@ -85,17 +85,15 @@ class NullConfig
 end
 
 def construct_config(os, config_path, user)
-  if config_path.nil? || config_path.empty?  # TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic
+  if config_path.nil? || config_path.empty? # TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic
     Kernel.puts 'WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration.'
-    cfg = NullConfig.load(user)
+    NullConfig.load(user)
+  elsif Config.load(config_path, user).invalid?
+    Kernel.puts "WARNING: Invalid YAML in #{config_path}. Assuming the default configuration."
+    NullConfig.load(user)
   else
-    cfg = Config.load(config_path, user)
-    if cfg.valid? # TODO: nil check
-      Kernel.puts "WARNING: Invalid YAML in #{config_path}. Assuming the default configuration."
-      cfg = NullConfig.load(user)
-    end
+    Config.load(config_path, user)
   end
-  cfg
 end
 
 def autoclop(os, config_path, user)
