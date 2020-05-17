@@ -104,9 +104,8 @@ def autoclop(os, config_path, user)
 end
 
 def clop_cmd(python_version, optimization, libargs)
-  "clop configure --python #{esc python_version} -#{esc optimization}#{libargs.empty? ? '' : ' '+libargs.map{ |a| esc a }.join(' ')}"
-end
-
-def esc arg # TODO: middleman
-  Shellwords.escape arg
+  'clop configure ' \
+    "--python #{Shellwords.escape python_version} " \
+    "-#{Shellwords.escape optimization}" \
+    "#{libargs.empty? ? '' : ' ' + libargs.map { |a| Shellwords.escape a }.join(' ')}"
 end
