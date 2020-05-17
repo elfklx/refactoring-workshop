@@ -32,7 +32,7 @@ class Config
 
   def py_version(os)
     default_python_version = 2
-    python_version || (
+    @cfg['python-version'] || (
       os =~ /Red Hat 8/ ? 3 : default_python_version # Red Hat has deprecated Python 2
     )
   end
@@ -46,10 +46,6 @@ class Config
   end
 
   private
-
-  def python_version
-    @cfg['python-version']
-  end
 
   def libs
     @cfg['libs']
