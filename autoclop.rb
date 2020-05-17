@@ -2,14 +2,12 @@ require 'shellwords'
 require 'yaml'
 
 def run_autoclop                   # TODO: several methods with similar names
-  config_path = ENV['AUTOCLOP_CONFIG'] # TODO: global variable config
   os = File.read('/etc/issue')    # TODO: global variable $config and ENV
-  user = ENV['USER']
-  autoclop(os, config_path, user)
+  autoclop(os, ENV)
 end
 
-def autoclop(os, config_path, user)
-  warning, cfg = ConfigFactory.build(config_path, user)
+def autoclop(os, env)
+  warning, cfg = ConfigFactory.build(env)
   Kernel.puts warning
   return if Kernel.system clop_cmd(cfg.py_version(os), cfg.opt, cfg.libargs)
 
@@ -31,8 +29,10 @@ def clop_cmd(python_version, optimization, libargs)
 end
 
 class ConfigFactory
-  def self.build(path, user)
-    if path.nil? || path.empty? # TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic
+  def self.build(env)
+    path = env['AUTOCLOP_CONFIG']
+    user = env['USER']
+    if path.nil? || path.empty?
       ['WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration.',
        DefaultConfig.new(user)]
     elsif (c = from_yaml(path, user)).invalid?
