@@ -37,7 +37,7 @@ class ConfigFactory
        DefaultConfig.new(user)]
     elsif (c = from_yaml(path, user)).invalid?
       ["WARNING: Invalid YAML in #{path}. Assuming the default configuration.",
-      DefaultConfig.new(user)]
+       DefaultConfig.new(user)]
     else
       ['', c]
     end
@@ -67,10 +67,7 @@ class Config
   end
 
   def py_version(os)
-    default_python_version = 2
-    @cfg['python-version'] || (
-      os =~ /Red Hat 8/ ? 3 : default_python_version # Red Hat has deprecated Python 2
-    )
+    @cfg['python-version'] || DefaultConfig.new(nil).py_version(os)
   end
 
   def opt
@@ -94,17 +91,17 @@ class Config
   def libdirs
     @cfg['libdirs']
   end
-
 end
 
 class DefaultConfig
   def initialize(user)
-    @user=user
+    @user = user
   end
 
   def py_version(os)
     default_python_version = 2
-    os =~ /Red Hat 8/ ? 3 : default_python_version # Red Hat has deprecated Python 2
+    # Red Hat has deprecated Python 2
+    os =~ /Red Hat 8/ ? 3 : default_python_version
   end
 
   def opt
