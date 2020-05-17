@@ -11,17 +11,23 @@ end
 def autoclop(os, config_path, user)
   warning, cfg = ConfigFactory.build(config_path, user)
   Kernel.puts warning
-  ok = Kernel.system clop_cmd(cfg.py_version(os), cfg.opt, cfg.libargs)
-  if !ok
-    raise 'clop failed. Please inspect the output above to determine what went wrong.'
-  end
+  return if Kernel.system clop_cmd(cfg.py_version(os), cfg.opt, cfg.libargs)
+
+  raise 'clop failed. Please inspect the output above to determine what went wrong.'
 end
 
 def clop_cmd(python_version, optimization, libargs)
+  libargs =
+    if libargs.empty?
+      ''
+    else
+      ' ' + libargs.map { |a| Shellwords.escape a }.join(' ')
+    end
+
   'clop configure ' \
     "--python #{Shellwords.escape python_version} " \
     "-#{Shellwords.escape optimization}" \
-    "#{libargs.empty? ? '' : ' ' + libargs.map { |a| Shellwords.escape a }.join(' ')}"
+    "#{libargs}"
 end
 
 class ConfigFactory
