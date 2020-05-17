@@ -84,24 +84,23 @@ class NullConfig
   end
 end
 
-def autoclop(os, config_path, user)   # TODO: multiple responsibilities; configuration and invocation
-  cmd =
-    if config_path.nil? || config_path.empty?  # TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic
-      Kernel.puts 'WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration.'
+def construct_config(os, config_path, user)
+  if config_path.nil? || config_path.empty?  # TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic
+    Kernel.puts 'WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration.'
+    cfg = NullConfig.load(user)
+  else
+    cfg = Config.load(config_path, user)
+    if cfg.valid? # TODO: nil check
+      Kernel.puts "WARNING: Invalid YAML in #{config_path}. Assuming the default configuration."
       cfg = NullConfig.load(user)
-      clop_cmd(cfg.py_version(os), cfg.opt, cfg.libargs)
-    else
-      cfg = Config.load(config_path, user)
-      if cfg.valid? # TODO: nil check
-        Kernel.puts "WARNING: Invalid YAML in #{config_path}. Assuming the default configuration."
-        cfg = NullConfig.load(user)
-        clop_cmd(cfg.py_version(os), cfg.opt, cfg.libargs)
-      else
-        clop_cmd(cfg.py_version(os), cfg.opt, cfg.libargs)
-      end
     end
+  end
+  cfg
+end
 
-  ok = Kernel.system cmd
+def autoclop(os, config_path, user)
+  cfg = construct_config(os, config_path, user)
+  ok = Kernel.system clop_cmd(cfg.py_version(os), cfg.opt, cfg.libargs)
   if !ok
     raise 'clop failed. Please inspect the output above to determine what went wrong.'
   end
