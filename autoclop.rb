@@ -67,7 +67,7 @@ class Config
 
 end
 
-class NullConfig
+class DefaultConfig
   def initialize(user)
     @user=user
   end
@@ -93,10 +93,10 @@ end
 def construct_config(os, config_path, user)
   if config_path.nil? || config_path.empty? # TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic
     Kernel.puts 'WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration.'
-    NullConfig.load(user)
+    DefaultConfig.load(user)
   elsif ConfigFactory.build(config_path, user).invalid?
     Kernel.puts "WARNING: Invalid YAML in #{config_path}. Assuming the default configuration."
-    NullConfig.load(user)
+    DefaultConfig.load(user)
   else
     ConfigFactory.build(config_path, user)
   end
