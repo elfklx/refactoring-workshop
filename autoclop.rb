@@ -10,7 +10,15 @@ end
 
 class ConfigFactory
   def self.build(path, user)
-    from_yaml(path, user)
+    if path.nil? || path.empty? # TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic
+      Kernel.puts 'WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration.'
+      DefaultConfig.new user
+    elsif from_yaml(path, user).invalid?
+      Kernel.puts "WARNING: Invalid YAML in #{path}. Assuming the default configuration."
+      DefaultConfig.new user
+    else
+      from_yaml(path, user)
+    end
   end
 
   def self.from_yaml(path, user)
@@ -72,10 +80,6 @@ class DefaultConfig
     @user=user
   end
 
-  def self.load(user)
-    new user
-  end
-
   def py_version(os)
     default_python_version = 2
     os =~ /Red Hat 8/ ? 3 : default_python_version # Red Hat has deprecated Python 2
@@ -90,20 +94,8 @@ class DefaultConfig
   end
 end
 
-def construct_config(os, config_path, user)
-  if config_path.nil? || config_path.empty? # TODO: nil check; TODO: order dependencies; TODO: anonymous boolean logic
-    Kernel.puts 'WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration.'
-    DefaultConfig.load(user)
-  elsif ConfigFactory.build(config_path, user).invalid?
-    Kernel.puts "WARNING: Invalid YAML in #{config_path}. Assuming the default configuration."
-    DefaultConfig.load(user)
-  else
-    ConfigFactory.build(config_path, user)
-  end
-end
-
 def autoclop(os, config_path, user)
-  cfg = construct_config(os, config_path, user)
+  cfg = ConfigFactory.build(config_path, user)
   ok = Kernel.system clop_cmd(cfg.py_version(os), cfg.opt, cfg.libargs)
   if !ok
     raise 'clop failed. Please inspect the output above to determine what went wrong.'
