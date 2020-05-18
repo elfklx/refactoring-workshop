@@ -54,7 +54,7 @@ class Config
     @user = user
   end
 
-  class RepeatedFlags < Struct.new(:flag, :args)
+  RepeatedFlags = Struct.new(:flag, :args) do
     def to_a
       args.map { |a| flag + a }
     end
@@ -69,7 +69,7 @@ class Config
       elsif libdirs
         ['-L', libdirs]
       else
-        ['-L', ["/home/#{@user}/.cbiscuit/lib"]]
+        ['-L', [DefaultConfig.new(nil, @user).lib]]
       end
     RepeatedFlags.new(*args).to_a
   end
@@ -118,7 +118,11 @@ class DefaultConfig
   end
 
   def libargs
-    ["-L/home/#{@user}/.cbiscuit/lib"]
+    ['-L' + lib]
+  end
+
+  def lib
+    "/home/#{@user}/.cbiscuit/lib"
   end
 end
 
