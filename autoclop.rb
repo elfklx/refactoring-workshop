@@ -6,7 +6,7 @@ def run_autoclop
 end
 
 def autoclop(os, env)
-  warning, cfg = ConfigFactory.build(os, env)
+  cfg, warning = ConfigFactory.build(os, env)
   Kernel.puts warning
   return if Kernel.system clop_cmd(cfg.py_version, cfg.opt, cfg.libargs)
 
@@ -32,13 +32,13 @@ class ConfigFactory
     path = env['AUTOCLOP_CONFIG']
     user = env['USER']
     if path.nil? || path.empty?
-      ['WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration.',
-       DefaultConfig.new(os, user)]
+      [DefaultConfig.new(os, user),
+       'WARNING: No file specified in $AUTOCLOP_CONFIG. Assuming the default configuration.']
     elsif (c = from_yaml(os, path, user)).invalid?
-      ["WARNING: Invalid YAML in #{path}. Assuming the default configuration.",
-       DefaultConfig.new(os, user)]
+      [DefaultConfig.new(os, user),
+       "WARNING: Invalid YAML in #{path}. Assuming the default configuration."]
     else
-      ['', c]
+      [c, '']
     end
   end
 
