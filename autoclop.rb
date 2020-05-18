@@ -62,11 +62,11 @@ class Config
 
   def libargs
     args =
-      if libs
+      if (libs = @cfg['libs'])
         ['-l', libs]
-      elsif libdir
+      elsif (libdir = @cfg['libdir'])
         ['-L', [libdir]]
-      elsif libdirs
+      elsif (libdirs = @cfg['libdirs'])
         ['-L', libdirs]
       else
         ['-L', [DefaultConfig.new(nil, @user).lib]]
@@ -84,20 +84,6 @@ class Config
 
   def invalid?
     @cfg.nil?
-  end
-
-  private
-
-  def libs
-    @cfg['libs']
-  end
-
-  def libdir
-    @cfg['libdir']
-  end
-
-  def libdirs
-    @cfg['libdirs']
   end
 end
 
